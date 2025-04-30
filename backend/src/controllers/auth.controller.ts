@@ -11,7 +11,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
     const {email, password} = req.body;
 
     const userExists = userModel.users.find( user => user.email === email);
-    if (!userExists) {
+    if (userExists) {
         res.status(400).json( { message: "Email already registered" } );
         return;
         }
