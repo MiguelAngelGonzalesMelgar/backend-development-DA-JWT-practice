@@ -7,12 +7,13 @@ import { signToken } from "../utils/jwt";
 
 let userIdCounter = 1;
 
-export const register = async (req: Request, res: Response) => {
+const register = async (req: Request, res: Response): Promise<void> => {
     const {email, password} = req.body;
 
     const userExists = userModel.users.find( user => user.email === email);
-    if (userExists) {
-        return res.status(400).json( { message: "Email already registered" } );
+    if (!userExists) {
+        res.status(400).json( { message: "Email already registered" } );
+        return;
         }
 
     const hashedPassword = await hashPassword(password);
@@ -22,20 +23,27 @@ export const register = async (req: Request, res: Response) => {
     res.status(201).json({ message: "User successfully registered"});
 }
 
-export const login = async (req: Request, res: Response) => {
+const login = async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
     const user = userModel.users.find(user => user.email === email);
 
     if (!user) {
-        return res.status(400).json({ message: "Invalid Credentials"});
+        res.status(400).json({ message: "Invalid Credentials"});
+        return;
     }
 
     const matchPasswords = await comparePassword(password, user.password);
 
     if (!matchPasswords) {
-        return res.status(400).json( { message: "Invalid Credentials"});
+        res.status(400).json( { message: "Invalid Credentials"});
+        return;
     }
 
     const token = signToken({ id: user.id, email: user.email });
     res.json({ token });
+}
+
+export default {
+    register,
+    login,
 }
